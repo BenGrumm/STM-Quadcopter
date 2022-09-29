@@ -74,7 +74,8 @@ Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
 Src/MPU6050.c \
 Src/Fusion/FusionAhrs.c \
 Src/Fusion/FusionCompass.c \
-Src/Fusion/FusionOffset.c
+Src/Fusion/FusionOffset.c \
+Src/FS-IA10B_driver.c
 
 # ASM sources
 ASM_SOURCES =  \

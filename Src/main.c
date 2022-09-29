@@ -20,10 +20,12 @@
 #include "main.h"
 #include "usb_device.h"
 #include "MPU6050.h"
+#include "FS-IA10B_driver.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 extern uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len);
+extern uint16_t fsia10b_channel_values[];
 
 /* USER CODE END Includes */
 
@@ -107,6 +109,9 @@ int main(void)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
+  // Start TIM for PPM input
+  HAL_StatusTypeDef error = HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
+
   MPU6050 mpu;
   FusionAhrs ahrs;
   uint32_t lastFlash = HAL_GetTick();
@@ -130,12 +135,15 @@ int main(void)
 
     const FusionQuaternion quat = FusionAhrsGetQuaternion(&ahrs);
 
-    #define Q quat.element
-        printf("%0.3f/%0.3f/%0.3f/%0.3f\n", Q.w, Q.x, Q.y, Q.z);
-    #undef Q
+    // #define Q quat.element
+    //     printf("%0.3f/%0.3f/%0.3f/%0.3f\n", Q.w, Q.x, Q.y, Q.z);
+    // #undef Q
 
     if(HAL_GetTick() - lastFlash > 1000){
-      printf("Flash\n");
+      printf("1 - %4d, 2 - %4d, 3 - %4d, 4 - %4d, 5 - %4d, 6 - %4d, 7 - %4d, 8 - %4d\n", 
+            fsia10b_channel_values[0], fsia10b_channel_values[1], fsia10b_channel_values[2], fsia10b_channel_values[3], 
+            fsia10b_channel_values[4], fsia10b_channel_values[5], fsia10b_channel_values[6], fsia10b_channel_values[7]);
+
       HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
       lastFlash = HAL_GetTick();
     }
@@ -490,6 +498,11 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim){
+    FSIA10B_INT(htim);
+}
+
 int _write(int file, char *ptr, int len)
 {
     UNUSED(file);
