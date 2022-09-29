@@ -22,6 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+extern uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len);
 
 /* USER CODE END Includes */
 
@@ -105,6 +106,8 @@ int main(void)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
+  uint32_t lastFlash = HAL_GetTick();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -114,6 +117,12 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+    if(HAL_GetTick() - lastFlash > 1000){
+      printf("Flash\n");
+      HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+      lastFlash = HAL_GetTick();
+    }
   }
   /* USER CODE END 3 */
 }
@@ -465,6 +474,12 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+int _write(int file, char *ptr, int len)
+{
+    UNUSED(file);
+    CDC_Transmit_FS((uint8_t*)ptr, len);
+    return len;
+}
 
 /* USER CODE END 4 */
 
