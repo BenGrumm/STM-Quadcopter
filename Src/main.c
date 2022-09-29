@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "usb_device.h"
+#include "MPU6050.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -106,7 +107,14 @@ int main(void)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
+  MPU6050 mpu;
+  FusionAhrs ahrs;
   uint32_t lastFlash = HAL_GetTick();
+
+  mpu.MPU_Accel_Range = MPU_ACCEL_SCALE_RANGE_16G;
+  mpu.MPU_Gyro_Range = MPU_GYRO_SCALE_RANGE_2000;
+
+  setupMPU6050(&mpu, &hi2c1, &ahrs);
 
   /* USER CODE END 2 */
 
@@ -117,6 +125,14 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+    MPU6050_readMPUAndCalculatePositionFusion(&mpu);
+
+    const FusionQuaternion quat = FusionAhrsGetQuaternion(&ahrs);
+
+    #define Q quat.element
+        printf("%0.3f/%0.3f/%0.3f/%0.3f\n", Q.w, Q.x, Q.y, Q.z);
+    #undef Q
 
     if(HAL_GetTick() - lastFlash > 1000){
       printf("Flash\n");
