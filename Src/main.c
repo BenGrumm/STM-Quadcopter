@@ -21,6 +21,7 @@
 #include "usb_device.h"
 #include "MPU6050.h"
 #include "FS-IA10B_driver.h"
+#include "BatteryMeasure4SLiPo.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -53,6 +54,8 @@ TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 
 /* USER CODE BEGIN PV */
+
+Battery bat;
 
 /* USER CODE END PV */
 
@@ -112,14 +115,25 @@ int main(void)
   // Start TIM for PPM input
   HAL_StatusTypeDef error = HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
 
+  // Start timer and ADC for battery measurment
+  error = HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+  __HAL_TIM_CLEAR_FLAG(&htim3, TIM_FLAG_UPDATE);
+  HAL_ADC_Start_IT(&hadc1);
+
+  bat.resistor_one = 100000;
+  bat.resistor_two = 22000;
+
+  // Setup MPU for reading
   MPU6050 mpu;
   FusionAhrs ahrs;
-  uint32_t lastFlash = HAL_GetTick();
 
   mpu.MPU_Accel_Range = MPU_ACCEL_SCALE_RANGE_16G;
   mpu.MPU_Gyro_Range = MPU_GYRO_SCALE_RANGE_2000;
 
   setupMPU6050(&mpu, &hi2c1, &ahrs);
+
+  // Flash variable
+  uint32_t lastFlash = HAL_GetTick();
 
   /* USER CODE END 2 */
 
@@ -140,9 +154,12 @@ int main(void)
     // #undef Q
 
     if(HAL_GetTick() - lastFlash > 1000){
-      printf("1 - %4d, 2 - %4d, 3 - %4d, 4 - %4d, 5 - %4d, 6 - %4d, 7 - %4d, 8 - %4d\n", 
-            fsia10b_channel_values[0], fsia10b_channel_values[1], fsia10b_channel_values[2], fsia10b_channel_values[3], 
-            fsia10b_channel_values[4], fsia10b_channel_values[5], fsia10b_channel_values[6], fsia10b_channel_values[7]);
+
+      printf("ADC - %.2f\n", bat.voltage);
+
+      // printf("1 - %4d, 2 - %4d, 3 - %4d, 4 - %4d, 5 - %4d, 6 - %4d, 7 - %4d, 8 - %4d\n", 
+      //       fsia10b_channel_values[0], fsia10b_channel_values[1], fsia10b_channel_values[2], fsia10b_channel_values[3], 
+      //       fsia10b_channel_values[4], fsia10b_channel_values[5], fsia10b_channel_values[6], fsia10b_channel_values[7]);
 
       HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
       lastFlash = HAL_GetTick();
@@ -500,7 +517,11 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim){
-    FSIA10B_INT(htim);
+  FSIA10B_INT(htim);
+}
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc){
+  BatteryADCIRQ(hadc, &bat);
 }
 
 int _write(int file, char *ptr, int len)

@@ -75,7 +75,8 @@ Src/MPU6050.c \
 Src/Fusion/FusionAhrs.c \
 Src/Fusion/FusionCompass.c \
 Src/Fusion/FusionOffset.c \
-Src/FS-IA10B_driver.c
+Src/FS-IA10B_driver.c \
+Src/BatteryMeasure4SLiPo.c
 
 # ASM sources
 ASM_SOURCES =  \
