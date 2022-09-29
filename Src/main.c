@@ -123,6 +123,17 @@ int main(void)
   bat.resistor_one = 100000;
   bat.resistor_two = 22000;
 
+  // Setup PWM for motors
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
+
+  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
+  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 1000);
+  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 2000);
+  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 0);
+
   // Setup MPU for reading
   MPU6050 mpu;
   FusionAhrs ahrs;
@@ -134,6 +145,8 @@ int main(void)
 
   // Flash variable
   uint32_t lastFlash = HAL_GetTick();
+
+  uint32_t loopCount = 0;
 
   /* USER CODE END 2 */
 
@@ -149,21 +162,23 @@ int main(void)
 
     const FusionQuaternion quat = FusionAhrsGetQuaternion(&ahrs);
 
-    // #define Q quat.element
-    //     printf("%0.3f/%0.3f/%0.3f/%0.3f\n", Q.w, Q.x, Q.y, Q.z);
-    // #undef Q
-
     if(HAL_GetTick() - lastFlash > 1000){
+      printf("Loop Count %ld\n", loopCount);
 
-      printf("ADC - %.2f\n", bat.voltage);
-
-      // printf("1 - %4d, 2 - %4d, 3 - %4d, 4 - %4d, 5 - %4d, 6 - %4d, 7 - %4d, 8 - %4d\n", 
+      // #define Q quat.element
+      // printf("Loop Count = %ld, ADC - %.2f \n1 - %4d, 2 - %4d, 3 - %4d, 4 - %4d, 5 - %4d, 6 - %4d, 7 - %4d, 8 - %4d\n%0.3f/%0.3f/%0.3f/%0.3f\n", loopCount, bat.voltage,
       //       fsia10b_channel_values[0], fsia10b_channel_values[1], fsia10b_channel_values[2], fsia10b_channel_values[3], 
-      //       fsia10b_channel_values[4], fsia10b_channel_values[5], fsia10b_channel_values[6], fsia10b_channel_values[7]);
+      //       fsia10b_channel_values[4], fsia10b_channel_values[5], fsia10b_channel_values[6], fsia10b_channel_values[7],
+      //       Q.w, Q.x, Q.y, Q.z);
+      // #undef Q
 
       HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
       lastFlash = HAL_GetTick();
+
+      loopCount = 0;
     }
+
+    loopCount++;
   }
   /* USER CODE END 3 */
 }
