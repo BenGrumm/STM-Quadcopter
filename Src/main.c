@@ -19,12 +19,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "usb_device.h"
-#include "MPU6050.h"
-#include "FS-IA10B_driver.h"
-#include "BatteryMeasure4SLiPo.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "BatteryMeasure4SLiPo.h"
+#include "FS-IA10B_driver.h"
+#include "MPU6050.h"
+
 extern uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len);
 extern uint16_t fsia10b_channel_values[];
 
@@ -48,6 +49,7 @@ extern uint16_t fsia10b_channel_values[];
 ADC_HandleTypeDef hadc1;
 
 I2C_HandleTypeDef hi2c1;
+DMA_HandleTypeDef hdma_i2c1_rx;
 
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
@@ -56,12 +58,14 @@ TIM_HandleTypeDef htim3;
 /* USER CODE BEGIN PV */
 
 Battery bat;
+MPU6050 mpu;
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_TIM1_Init(void);
@@ -104,6 +108,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_ADC1_Init();
   MX_I2C1_Init();
   MX_TIM1_Init();
@@ -135,7 +140,6 @@ int main(void)
   __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 0);
 
   // Setup MPU for reading
-  MPU6050 mpu;
   FusionAhrs ahrs;
 
   mpu.MPU_Accel_Range = MPU_ACCEL_SCALE_RANGE_16G;
@@ -148,6 +152,8 @@ int main(void)
 
   uint32_t loopCount = 0;
 
+  MPU6050_ReadDataDMA(&mpu);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -158,19 +164,20 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-    MPU6050_readMPUAndCalculatePositionFusion(&mpu);
-
-    const FusionQuaternion quat = FusionAhrsGetQuaternion(&ahrs);
+    MPU6050_DMALoop(&mpu);
 
     if(HAL_GetTick() - lastFlash > 1000){
-      printf("Loop Count %ld\n", loopCount);
 
-      // #define Q quat.element
-      // printf("Loop Count = %ld, ADC - %.2f \n1 - %4d, 2 - %4d, 3 - %4d, 4 - %4d, 5 - %4d, 6 - %4d, 7 - %4d, 8 - %4d\n%0.3f/%0.3f/%0.3f/%0.3f\n", loopCount, bat.voltage,
+      const FusionQuaternion quat = FusionAhrsGetQuaternion(&ahrs);
+
+      printf("Loop Count = %ld\n", loopCount);
+      // printf("ADC - %.2f\n", bat.voltage);
+      // printf("1 - %4d, 2 - %4d, 3 - %4d, 4 - %4d, 5 - %4d, 6 - %4d, 7 - %4d, 8 - %4d\n", 
       //       fsia10b_channel_values[0], fsia10b_channel_values[1], fsia10b_channel_values[2], fsia10b_channel_values[3], 
-      //       fsia10b_channel_values[4], fsia10b_channel_values[5], fsia10b_channel_values[6], fsia10b_channel_values[7],
-      //       Q.w, Q.x, Q.y, Q.z);
-      // #undef Q
+      //       fsia10b_channel_values[4], fsia10b_channel_values[5], fsia10b_channel_values[6], fsia10b_channel_values[7]);
+      #define Q quat.element
+        printf("%0.3f/%0.3f/%0.3f/%0.3f\n", Q.w, Q.x, Q.y, Q.z);
+      #undef Q
 
       HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
       lastFlash = HAL_GetTick();
@@ -503,6 +510,22 @@ static void MX_TIM3_Init(void)
 }
 
 /**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Stream0_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream0_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream0_IRQn);
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -537,6 +560,10 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim){
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc){
   BatteryADCIRQ(hadc, &bat);
+}
+
+void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c){
+  MPU6050_DMAReadCplt(&mpu);
 }
 
 int _write(int file, char *ptr, int len)

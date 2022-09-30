@@ -29,6 +29,10 @@
  */
 #define MPU6050_I2C_ADDR    (0x68 << 1)
 
+// If we read 14 regs from MPU_ACCEL_XOUT_H we get all ACCELL then all temp
+// then all the gyro regs
+#define MPU6050_CONSECUTIVE_DATA_REGS 14
+
 /**
  * MPU Registers
  * https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf
@@ -104,15 +108,19 @@ typedef struct {
 
     float position[3]; // Combined gyro and accel angles, X, Y, Z - Roll, Pitch, Yaw
 
+    // Used for dma
+    uint32_t currentGyroReadTime;
+    bool hasNewData;
+    uint8_t dmaDataBuffer[MPU6050_CONSECUTIVE_DATA_REGS];
+
     uint32_t lastGyroReadingTime; // stores time to calculate gyro movement
 }MPU6050;
 
-/**
- * @brief 
- * 
- * @return int 
- */
 uint8_t setupMPU6050(MPU6050* mpu, I2C_HandleTypeDef* i2c_handler, FusionAhrs* ahrs);
+
+HAL_StatusTypeDef MPU6050_ReadDataDMA(MPU6050* device);
+void MPU6050_DMAReadCplt(MPU6050* device);
+void MPU6050_DMALoop(MPU6050* device);
 
 HAL_StatusTypeDef MPU6050_calculateGyroAndMPUError(MPU6050* device, float* gyroError, float* accelError);
 

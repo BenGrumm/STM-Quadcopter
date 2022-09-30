@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "mpu6050.h": "c"
+        "mpu6050.h": "c",
+        "batterymeasure4slipo.h": "c"
     }
 }
