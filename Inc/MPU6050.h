@@ -29,6 +29,12 @@
  */
 #define MPU6050_I2C_ADDR    (0x68 << 1)
 
+// Used for clearing the bus when SDA is pulled low causing I2C busy
+#define I2C1_SCL_PIN GPIO_PIN_6
+#define I2C1_SCL_PORT GPIOB
+#define I2C1_SDA_PIN GPIO_PIN_7
+#define I2C1_SDA_PORT GPIOB
+
 // If we read 14 regs from MPU_ACCEL_XOUT_H we get all ACCELL then all temp
 // then all the gyro regs
 #define MPU6050_CONSECUTIVE_DATA_REGS 14

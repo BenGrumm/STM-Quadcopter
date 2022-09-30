@@ -166,18 +166,22 @@ int main(void)
 
     MPU6050_DMALoop(&mpu);
 
-    if(HAL_GetTick() - lastFlash > 1000){
+    const FusionQuaternion quat = FusionAhrsGetQuaternion(&ahrs);
 
-      const FusionQuaternion quat = FusionAhrsGetQuaternion(&ahrs);
+    // #define Q quat.element
+    //   printf("%0.3f/%0.3f/%0.3f/%0.3f/%ld\n", Q.w, Q.x, Q.y, Q.z);
+    // #undef Q
+
+    if(HAL_GetTick() - lastFlash > 1000){
 
       printf("Loop Count = %ld\n", loopCount);
       // printf("ADC - %.2f\n", bat.voltage);
       // printf("1 - %4d, 2 - %4d, 3 - %4d, 4 - %4d, 5 - %4d, 6 - %4d, 7 - %4d, 8 - %4d\n", 
       //       fsia10b_channel_values[0], fsia10b_channel_values[1], fsia10b_channel_values[2], fsia10b_channel_values[3], 
       //       fsia10b_channel_values[4], fsia10b_channel_values[5], fsia10b_channel_values[6], fsia10b_channel_values[7]);
-      #define Q quat.element
-        printf("%0.3f/%0.3f/%0.3f/%0.3f\n", Q.w, Q.x, Q.y, Q.z);
-      #undef Q
+      // #define Q quat.element
+      //   printf("%0.3f/%0.3f/%0.3f/%0.3f\n", Q.w, Q.x, Q.y, Q.z);
+      // #undef Q
 
       HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
       lastFlash = HAL_GetTick();

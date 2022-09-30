@@ -6,6 +6,7 @@ static void MPU6050_convertRegsToSignedVals(uint8_t* regs, int16_t* dest, uint8_
 static void convertGyroRegsToDegreesS(MPU6050* device, int16_t* gyroValues, float* values);
 static void convertAccelRegToGs(MPU6050* device, int16_t* accelValues, float* values);
 static void convertTemperatureRegToCelsius(int16_t* regValue, float* actualVal);
+static void I2C1_ClearBusyFlagErratum(I2C_HandleTypeDef *instance);
 
 /**
  * @brief MPU setup function that will initialise MPU struct and setup the MPU6050 for use
@@ -50,7 +51,7 @@ uint8_t setupMPU6050(MPU6050* mpu, I2C_HandleTypeDef* i2c_handler, FusionAhrs* a
         error = MPU6050_writeRegisters(mpu, MPU_PWR_MGMT_1, &tempReg, 1);
 
         if(error == HAL_BUSY){
-            // Apply fix ???
+            I2C1_ClearBusyFlagErratum(mpu->i2c_handler);
         }
     } while(i++ < 3 && error == HAL_BUSY);
 
@@ -69,6 +70,132 @@ uint8_t setupMPU6050(MPU6050* mpu, I2C_HandleTypeDef* i2c_handler, FusionAhrs* a
     returnError += (error != HAL_OK);
 
     return returnError;
+}
+
+/**
+ * @brief Function to clear busy when the external device holds SDA low 
+ * (https://electronics.stackexchange.com/questions/351972/hal-i2c-hangs-cannot-be-solved-with-standard-routine-use-to-unlock-i2c)
+ * 
+ * @param instance i2c instance to clear bus of
+ */
+static void I2C1_ClearBusyFlagErratum(I2C_HandleTypeDef *instance)
+{
+    GPIO_InitTypeDef GPIO_InitStruct;
+    int timeout =100;
+    int timeout_cnt=0;
+
+    // 1. Clear PE bit.
+    instance->Instance->CR1 &= ~(0x0001);
+
+    //  2. Configure the SCL and SDA I/Os as General Purpose Output Open-Drain, High level (Write 1 to GPIOx_ODR).
+    GPIO_InitStruct.Mode         = GPIO_MODE_OUTPUT_OD;
+    GPIO_InitStruct.Alternate    = GPIO_AF4_I2C3;
+    GPIO_InitStruct.Pull         = GPIO_PULLUP;
+    GPIO_InitStruct.Speed        = GPIO_SPEED_FREQ_HIGH;
+
+    GPIO_InitStruct.Pin          = I2C1_SCL_PIN;
+    HAL_GPIO_Init(I2C1_SCL_PORT, &GPIO_InitStruct);
+    HAL_GPIO_WritePin(I2C1_SCL_PORT, I2C1_SCL_PIN, GPIO_PIN_SET);
+
+    GPIO_InitStruct.Pin          = I2C1_SDA_PIN;
+    HAL_GPIO_Init(I2C1_SDA_PORT, &GPIO_InitStruct);
+    HAL_GPIO_WritePin(I2C1_SDA_PORT, I2C1_SDA_PIN, GPIO_PIN_SET);
+
+
+    // 3. Check SCL and SDA High level in GPIOx_IDR.
+    while (GPIO_PIN_SET != HAL_GPIO_ReadPin(I2C1_SCL_PORT, I2C1_SCL_PIN))
+    {
+        timeout_cnt++;
+        if(timeout_cnt>timeout)
+            return;
+    }
+
+    while (GPIO_PIN_SET != HAL_GPIO_ReadPin(I2C1_SDA_PORT, I2C1_SDA_PIN))
+    {
+        //Move clock to release I2C
+        HAL_GPIO_WritePin(I2C1_SCL_PORT, I2C1_SCL_PIN, GPIO_PIN_RESET);
+        asm("nop");
+        HAL_GPIO_WritePin(I2C1_SCL_PORT, I2C1_SCL_PIN, GPIO_PIN_SET);
+
+        timeout_cnt++;
+        if(timeout_cnt>timeout)
+            return;
+    }
+
+    // 4. Configure the SDA I/O as General Purpose Output Open-Drain, Low level (Write 0 to GPIOx_ODR).
+    HAL_GPIO_WritePin(I2C1_SDA_PORT, I2C1_SDA_PIN, GPIO_PIN_RESET);
+
+    //  5. Check SDA Low level in GPIOx_IDR.
+    while (GPIO_PIN_RESET != HAL_GPIO_ReadPin(I2C1_SDA_PORT, I2C1_SDA_PIN))
+    {
+        timeout_cnt++;
+        if(timeout_cnt>timeout)
+            return;
+    }
+
+    // 6. Configure the SCL I/O as General Purpose Output Open-Drain, Low level (Write 0 to GPIOx_ODR).
+    HAL_GPIO_WritePin(I2C1_SCL_PORT, I2C1_SCL_PIN, GPIO_PIN_RESET);
+
+    //  7. Check SCL Low level in GPIOx_IDR.
+    while (GPIO_PIN_RESET != HAL_GPIO_ReadPin(I2C1_SCL_PORT, I2C1_SCL_PIN))
+    {
+        timeout_cnt++;
+        if(timeout_cnt>timeout)
+            return;
+    }
+
+    // 8. Configure the SCL I/O as General Purpose Output Open-Drain, High level (Write 1 to GPIOx_ODR).
+    HAL_GPIO_WritePin(I2C1_SCL_PORT, I2C1_SCL_PIN, GPIO_PIN_SET);
+
+    // 9. Check SCL High level in GPIOx_IDR.
+    while (GPIO_PIN_SET != HAL_GPIO_ReadPin(I2C1_SCL_PORT, I2C1_SCL_PIN))
+    {
+        timeout_cnt++;
+        if(timeout_cnt>timeout)
+            return;
+    }
+
+    // 10. Configure the SDA I/O as General Purpose Output Open-Drain , High level (Write 1 to GPIOx_ODR).
+    HAL_GPIO_WritePin(I2C1_SDA_PORT, I2C1_SDA_PIN, GPIO_PIN_SET);
+
+    // 11. Check SDA High level in GPIOx_IDR.
+    while (GPIO_PIN_SET != HAL_GPIO_ReadPin(I2C1_SDA_PORT, I2C1_SDA_PIN))
+    {
+        timeout_cnt++;
+        if(timeout_cnt>timeout)
+            return;
+    }
+
+    // 12. Configure the SCL and SDA I/Os as Alternate function Open-Drain.
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF4_I2C3;
+
+    GPIO_InitStruct.Pin = I2C1_SCL_PIN;
+    HAL_GPIO_Init(I2C1_SCL_PORT, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = I2C1_SDA_PIN;
+    HAL_GPIO_Init(I2C1_SDA_PORT, &GPIO_InitStruct);
+
+    HAL_GPIO_WritePin(I2C1_SCL_PORT, I2C1_SCL_PIN, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(I2C1_SDA_PORT, I2C1_SDA_PIN, GPIO_PIN_SET);
+
+    // 13. Set SWRST bit in I2Cx_CR1 register.
+    instance->Instance->CR1 |= 0x8000;
+
+    asm("nop");
+
+    // 14. Clear SWRST bit in I2Cx_CR1 register.
+    instance->Instance->CR1 &= ~0x8000;
+
+    asm("nop");
+
+    // 15. Enable the I2C peripheral by setting the PE bit in I2Cx_CR1 register
+    instance->Instance->CR1 |= 0x0001;
+
+    // Call initialization function.
+    HAL_I2C_Init(instance);
 }
 
 /**
