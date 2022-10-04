@@ -9,5 +9,5 @@ Below are images of the perfboard wired up with the I2C (SDA=Yellow, SCL=White),
 </p>
 Below is a simple schematic showing the pin connections, this doesnt include and voltage regulation or requirements for the MCU as this is taken care of by the black pill board and MPU-6050 breakout board.
 <p>
-<img src="https://svgur.com/i/n85.svg">
+<img src="https://svgur.com/i/n7K.svg">
 </p>
