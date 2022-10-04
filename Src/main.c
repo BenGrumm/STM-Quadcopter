@@ -134,10 +134,10 @@ int main(void)
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
 
-  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
+  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1000);
   __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 1000);
   __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 2000);
-  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 0);
+  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 1000);
 
   // Setup MPU for reading
   FusionAhrs ahrs;
@@ -168,17 +168,25 @@ int main(void)
 
     const FusionQuaternion quat = FusionAhrsGetQuaternion(&ahrs);
 
-    // #define Q quat.element
-    //   printf("%0.3f/%0.3f/%0.3f/%0.3f/%ld\n", Q.w, Q.x, Q.y, Q.z);
-    // #undef Q
+    #define Q quat.element
+      // printf("%0.3f/%0.3f/%0.3f/%0.3f\n", Q.w, Q.x, Q.y, Q.z);
+    #undef Q
+
+    if(fsia10b_channel_values[2] < 1000){
+      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1000);
+    }else if(fsia10b_channel_values[2] > 2000){
+      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 2000);
+    }else{
+      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, fsia10b_channel_values[2]);
+    }
 
     if(HAL_GetTick() - lastFlash > 1000){
 
-      printf("Loop Count = %ld\n", loopCount);
+      // printf("Loop Count = %ld\n", loopCount);
       // printf("ADC - %.2f\n", bat.voltage);
-      // printf("1 - %4d, 2 - %4d, 3 - %4d, 4 - %4d, 5 - %4d, 6 - %4d, 7 - %4d, 8 - %4d\n", 
-      //       fsia10b_channel_values[0], fsia10b_channel_values[1], fsia10b_channel_values[2], fsia10b_channel_values[3], 
-      //       fsia10b_channel_values[4], fsia10b_channel_values[5], fsia10b_channel_values[6], fsia10b_channel_values[7]);
+      printf("1 - %4d, 2 - %4d, 3 - %4d, 4 - %4d, 5 - %4d, 6 - %4d, 7 - %4d, 8 - %4d\n", 
+            fsia10b_channel_values[0], fsia10b_channel_values[1], fsia10b_channel_values[2], fsia10b_channel_values[3], 
+            fsia10b_channel_values[4], fsia10b_channel_values[5], fsia10b_channel_values[6], fsia10b_channel_values[7]);
       // #define Q quat.element
       //   printf("%0.3f/%0.3f/%0.3f/%0.3f\n", Q.w, Q.x, Q.y, Q.z);
       // #undef Q
