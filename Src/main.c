@@ -25,9 +25,10 @@
 #include "BatteryMeasure4SLiPo.h"
 #include "FS-IA10B_driver.h"
 #include "MPU6050.h"
+#include "DroneStateMachine.h"
+#include "ESCController.h"
 
 extern uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len);
-extern uint16_t fsia10b_channel_values[];
 
 /* USER CODE END Includes */
 
@@ -59,6 +60,7 @@ TIM_HandleTypeDef htim3;
 
 Battery bat;
 MPU6050 mpu;
+FSIA10B receiver;
 
 /* USER CODE END PV */
 
@@ -118,6 +120,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   // Start TIM for PPM input
+  FSIA10B_setup(&receiver);
   HAL_StatusTypeDef error = HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
 
   // Start timer and ADC for battery measurment
@@ -134,10 +137,7 @@ int main(void)
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
 
-  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1000);
-  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 1000);
-  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 2000);
-  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 1000);
+  ESC_setup(&htim2);
 
   // Setup MPU for reading
   FusionAhrs ahrs;
@@ -172,12 +172,12 @@ int main(void)
       // printf("%0.3f/%0.3f/%0.3f/%0.3f\n", Q.w, Q.x, Q.y, Q.z);
     #undef Q
 
-    if(fsia10b_channel_values[2] < 1000){
+    if(receiver.channels[2] < 1000){
       __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1000);
-    }else if(fsia10b_channel_values[2] > 2000){
+    }else if(receiver.channels[2] > 2000){
       __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 2000);
     }else{
-      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, fsia10b_channel_values[2]);
+      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, receiver.channels[2]);
     }
 
     if(HAL_GetTick() - lastFlash > 1000){
@@ -185,8 +185,8 @@ int main(void)
       // printf("Loop Count = %ld\n", loopCount);
       // printf("ADC - %.2f\n", bat.voltage);
       printf("1 - %4d, 2 - %4d, 3 - %4d, 4 - %4d, 5 - %4d, 6 - %4d, 7 - %4d, 8 - %4d\n", 
-            fsia10b_channel_values[0], fsia10b_channel_values[1], fsia10b_channel_values[2], fsia10b_channel_values[3], 
-            fsia10b_channel_values[4], fsia10b_channel_values[5], fsia10b_channel_values[6], fsia10b_channel_values[7]);
+            receiver.channels[0], receiver.channels[1], receiver.channels[2], receiver.channels[3], 
+            receiver.channels[4], receiver.channels[5], receiver.channels[6], receiver.channels[7]);
       // #define Q quat.element
       //   printf("%0.3f/%0.3f/%0.3f/%0.3f\n", Q.w, Q.x, Q.y, Q.z);
       // #undef Q
@@ -410,6 +410,12 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE BEGIN TIM2_Init 1 */
 
+  /**
+   * Input clock = 96MHz
+   * Prescale by 96MHz down to 1MHz
+   * Then we have a period of 20,000 pulses to give a 50Hz signal (20ms length)
+   */
+
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 96-1;
@@ -567,7 +573,9 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim){
-  FSIA10B_INT(htim);
+  if(htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1){
+    FSIA10B_INT(&receiver);
+  }
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc){

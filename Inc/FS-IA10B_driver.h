@@ -11,9 +11,16 @@
 #define FSIA10B_TIME_CHANNEL_MAX_MICRO  2000
 #define FSIA10B_TIME_START_BUFFER       500
 #define FSIA10B_TIME_START_GREATER      (FSIA10B_TIME_CHANNEL_MAX_MICRO + FSIA10B_TIME_START_BUFFER)
+#define FSIA10B_RECEIVER_TIMEOUT        1000
 
-extern uint16_t fsia10b_channel_values[FSIA10B_NUMBER_CHANNELS];
+typedef struct {
+    TIM_HandleTypeDef *htim;
+    uint16_t channels[FSIA10B_NUMBER_CHANNELS];
+    uint8_t currentPos;
+    uint32_t lastUpdate;
+} FSIA10B;
 
-void FSIA10B_INT(TIM_HandleTypeDef *htim);
+void FSIA10B_setup(FSIA10B* receiver);
+void FSIA10B_INT(FSIA10B *receiver);
 
 #endif

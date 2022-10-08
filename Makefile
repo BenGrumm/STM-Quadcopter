@@ -76,7 +76,9 @@ Src/Fusion/FusionAhrs.c \
 Src/Fusion/FusionCompass.c \
 Src/Fusion/FusionOffset.c \
 Src/FS-IA10B_driver.c \
-Src/BatteryMeasure4SLiPo.c
+Src/BatteryMeasure4SLiPo.c \
+Src/DroneStateMachine.c \
+Src/ESCController.c
 
 # ASM sources
 ASM_SOURCES =  \
