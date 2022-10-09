@@ -7,8 +7,15 @@
 // Arming sequence P5
 // Beeps - Throttle calibration P8
 
-void ESC_setup(TIM_HandleTypeDef* pwm_tim);
-void ESC_arm(TIM_HandleTypeDef* pwm_tim);
+typedef struct{
+    TIM_HandleTypeDef* pwm_tim;
+    uint32_t max_throttle;
+    uint32_t min_throttle;
+}ESC_4Channels;
+
+HAL_StatusTypeDef ESC_setup(ESC_4Channels* escs);
+void ESC_arm(ESC_4Channels* escs);
 void ESC_throttleCalibration(TIM_HandleTypeDef* pwm_tim);
+long map(long x, long in_min, long in_max, long out_min, long out_max);
 
 #endif

@@ -21,6 +21,6 @@ typedef struct {
 } FSIA10B;
 
 void FSIA10B_setup(FSIA10B* receiver);
-void FSIA10B_INT(FSIA10B *receiver);
+void FSIA10B_INT(FSIA10B *receiver, TIM_HandleTypeDef *htim);
 
 #endif

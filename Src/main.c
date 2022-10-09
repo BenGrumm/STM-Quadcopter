@@ -61,6 +61,7 @@ TIM_HandleTypeDef htim3;
 Battery bat;
 MPU6050 mpu;
 FSIA10B receiver;
+ESC_4Channels motors;
 
 /* USER CODE END PV */
 
@@ -119,14 +120,16 @@ int main(void)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
+  HAL_StatusTypeDef error;
+
   // Start TIM for PPM input
   FSIA10B_setup(&receiver);
-  HAL_StatusTypeDef error = HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
+  error = HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
 
   // Start timer and ADC for battery measurment
+  HAL_ADC_Start(&hadc1);
   error = HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
   __HAL_TIM_CLEAR_FLAG(&htim3, TIM_FLAG_UPDATE);
-  HAL_ADC_Start_IT(&hadc1);
 
   bat.resistor_one = 100000;
   bat.resistor_two = 22000;
@@ -137,7 +140,11 @@ int main(void)
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
 
-  ESC_setup(&htim2);
+  motors.pwm_tim = &htim2;
+  motors.min_throttle = 1000;
+  motors.max_throttle = 2000;
+
+  ESC_setup(&motors);
 
   // Setup MPU for reading
   FusionAhrs ahrs;
@@ -153,6 +160,8 @@ int main(void)
   uint32_t loopCount = 0;
 
   MPU6050_ReadDataDMA(&mpu);
+
+  ESC_arm(&motors);
 
   /* USER CODE END 2 */
 
@@ -174,10 +183,20 @@ int main(void)
 
     if(receiver.channels[2] < 1000){
       __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1000);
+      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 1000);
+      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1000);
+      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 1000);
     }else if(receiver.channels[2] > 2000){
       __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 2000);
+      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 2000);
+      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 2000);
+      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 2000);
+      
     }else{
       __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, receiver.channels[2]);
+      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, receiver.channels[2]);
+      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, receiver.channels[2]);
+      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, receiver.channels[2]);
     }
 
     if(HAL_GetTick() - lastFlash > 1000){
@@ -574,7 +593,7 @@ static void MX_GPIO_Init(void)
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim){
   if(htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1){
-    FSIA10B_INT(&receiver);
+    FSIA10B_INT(&receiver, htim);
   }
 }
 

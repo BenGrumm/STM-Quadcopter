@@ -19,8 +19,8 @@ void FSIA10B_setup(FSIA10B* receiver){
  * 
  * @param receiver device to handle interrupt for
  */
-void FSIA10B_INT(FSIA10B *receiver){
-    uint32_t val = HAL_TIM_ReadCapturedValue(receiver->htim, TIM_CHANNEL_1);
+void FSIA10B_INT(FSIA10B *receiver, TIM_HandleTypeDef *htim){
+    uint32_t val = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
 
     // 1 tick = 1uS
     // Normal length from 1ms - 2ms, over 2ms is gap between last and first signal
@@ -33,7 +33,7 @@ void FSIA10B_INT(FSIA10B *receiver){
     }
 
     // Reset
-    __HAL_TIM_SET_COUNTER(receiver->htim, 0);
+    __HAL_TIM_SET_COUNTER(htim, 0);
 }
 
 /**
