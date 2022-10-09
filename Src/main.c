@@ -124,6 +124,7 @@ int main(void)
 
   // Start TIM for PPM input
   FSIA10B_setup(&receiver);
+  receiver.htim = &htim1;
   error = HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
 
   // Start timer and ADC for battery measurment
