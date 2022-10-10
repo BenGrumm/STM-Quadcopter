@@ -128,7 +128,7 @@ int main(void)
   error = HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
 
   // Start timer and ADC for battery measurment
-  HAL_ADC_Start(&hadc1);
+  HAL_ADC_Start_IT(&hadc1);
   error = HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
   __HAL_TIM_CLEAR_FLAG(&htim3, TIM_FLAG_UPDATE);
 
@@ -188,10 +188,10 @@ int main(void)
     if(HAL_GetTick() - lastFlash > 1000){
 
       // printf("Loop Count = %ld\n", loopCount);
-      // printf("ADC - %.2f\n", bat.voltage);
-      printf("1 - %4d, 2 - %4d, 3 - %4d, 4 - %4d, 5 - %4d, 6 - %4d, 7 - %4d, 8 - %4d\n", 
-            receiver.channels[0], receiver.channels[1], receiver.channels[2], receiver.channels[3], 
-            receiver.channels[4], receiver.channels[5], receiver.channels[6], receiver.channels[7]);
+      printf("ADC - %.2f\n", bat.voltage);
+      // printf("1 - %4d, 2 - %4d, 3 - %4d, 4 - %4d, 5 - %4d, 6 - %4d, 7 - %4d, 8 - %4d\n", 
+      //       receiver.channels[0], receiver.channels[1], receiver.channels[2], receiver.channels[3], 
+      //       receiver.channels[4], receiver.channels[5], receiver.channels[6], receiver.channels[7]);
       // #define Q quat.element
       //   printf("%0.3f/%0.3f/%0.3f/%0.3f\n", Q.w, Q.x, Q.y, Q.z);
       // #undef Q
