@@ -25,7 +25,7 @@
 #include "BatteryMeasure4SLiPo.h"
 #include "FS-IA10B_driver.h"
 #include "MPU6050.h"
-#include "DroneStateMachine.h"
+#include "Drone.h"
 #include "ESCController.h"
 
 extern uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len);
@@ -57,6 +57,8 @@ TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 
 /* USER CODE BEGIN PV */
+
+Drone drone;
 
 Battery bat;
 MPU6050 mpu;
@@ -121,6 +123,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   HAL_StatusTypeDef error;
+
+  Drone_initialise(&drone);
 
   // Start TIM for PPM input
   FSIA10B_setup(&receiver);

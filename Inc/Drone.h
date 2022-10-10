@@ -2,8 +2,9 @@
 #define DRONE_STATE_MACHINE_H
 
 enum DRONE_STATE {
-    DISCONNECTED = 0,
-    ARMED
+    POWER_ON = 0,
+    ARMED,
+    DISARMED
 };
 
 enum ARM_PREVENTION_FLAGS {
@@ -12,5 +13,12 @@ enum ARM_PREVENTION_FLAGS {
   LOW_VOLTAGE,  // Ensure battery voltage is not too low
   THROTTLE,     // Ensure Throttle = 0 at start
 };
+
+typedef struct {
+  DRONE_STATE state;
+}Drone;
+
+void Drone_initialise(Drone* drone);
+void Drone_run(Drone* drone);
 
 #endif
