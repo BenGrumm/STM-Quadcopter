@@ -135,17 +135,12 @@ int main(void)
   bat.resistor_one = 100000;
   bat.resistor_two = 22000;
 
-  // Setup PWM for motors
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
-
   motors.pwm_tim = &htim2;
   motors.min_throttle = 1000;
   motors.max_throttle = 2000;
 
   ESC_setup(&motors);
+  // ESC_arm(&motors);
 
   // Setup MPU for reading
   FusionAhrs ahrs;
@@ -162,7 +157,7 @@ int main(void)
 
   MPU6050_ReadDataDMA(&mpu);
 
-  ESC_arm(&motors);
+  // ESC_arm(&motors);
 
   /* USER CODE END 2 */
 
@@ -183,21 +178,11 @@ int main(void)
     #undef Q
 
     if(receiver.channels[2] < 1000){
-      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1000);
-      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 1000);
-      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1000);
-      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 1000);
+      ESC_writeAll(&motors, 1000);
     }else if(receiver.channels[2] > 2000){
-      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 2000);
-      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 2000);
-      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 2000);
-      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 2000);
-      
+      ESC_writeAll(&motors, 2000);
     }else{
-      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, receiver.channels[2]);
-      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, receiver.channels[2]);
-      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, receiver.channels[2]);
-      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, receiver.channels[2]);
+      ESC_writeAll(&motors, receiver.channels[2]);
     }
 
     if(HAL_GetTick() - lastFlash > 1000){
@@ -440,7 +425,7 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 96-1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 20000-1;
+  htim2.Init.Period = 2000-1;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)

@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "mpu6050.h": "c",
-        "batterymeasure4slipo.h": "c"
+        "batterymeasure4slipo.h": "c",
+        "esccontroller.h": "c"
     }
 }
