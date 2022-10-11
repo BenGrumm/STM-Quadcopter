@@ -124,7 +124,7 @@ int main(void)
 
   HAL_StatusTypeDef error;
 
-  Drone_initialise(&drone);
+  Drone_initialise(&drone, &motors, &bat, &mpu, &receiver);
 
   // Start TIM for PPM input
   FSIA10B_setup(&receiver);
@@ -181,21 +181,15 @@ int main(void)
       // printf("%0.3f/%0.3f/%0.3f/%0.3f\n", Q.w, Q.x, Q.y, Q.z);
     #undef Q
 
-    if(receiver.channels[2] < 1000){
-      ESC_writeAll(&motors, 1000);
-    }else if(receiver.channels[2] > 2000){
-      ESC_writeAll(&motors, 2000);
-    }else{
-      ESC_writeAll(&motors, receiver.channels[2]);
-    }
+    Drone_run(&drone);
 
     if(HAL_GetTick() - lastFlash > 1000){
 
       // printf("Loop Count = %ld\n", loopCount);
-      printf("ADC - %.2f\n", bat.voltage);
-      // printf("1 - %4d, 2 - %4d, 3 - %4d, 4 - %4d, 5 - %4d, 6 - %4d, 7 - %4d, 8 - %4d\n", 
-      //       receiver.channels[0], receiver.channels[1], receiver.channels[2], receiver.channels[3], 
-      //       receiver.channels[4], receiver.channels[5], receiver.channels[6], receiver.channels[7]);
+      // printf("ADC - %.2f\n", bat.voltage);
+      printf("1 - %4d, 2 - %4d, 3 - %4d, 4 - %4d, 5 - %4d, 6 - %4d, 7 - %4d, 8 - %4d\n", 
+            receiver.channels[0], receiver.channels[1], receiver.channels[2], receiver.channels[3], 
+            receiver.channels[4], receiver.channels[5], receiver.channels[6], receiver.channels[7]);
       // #define Q quat.element
       //   printf("%0.3f/%0.3f/%0.3f/%0.3f\n", Q.w, Q.x, Q.y, Q.z);
       // #undef Q

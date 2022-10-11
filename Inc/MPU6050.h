@@ -99,6 +99,8 @@
 #define MPU_GYRO_SENSITIVITY_1000   32.8
 #define MPU_GYRO_SENSITIVITY_2000   16.4
 
+#define MPU_RECEIVE_TIMEOUT_MS      10
+
 /**
  * MPU Struct
  */

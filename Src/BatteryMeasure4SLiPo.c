@@ -12,3 +12,12 @@ void BatteryADCIRQ(ADC_HandleTypeDef* hadc1, Battery* battery){
     // To measure high voltage we use voltage divider so use that formula
     battery->voltage = floorf((measuredVoltage * (battery->resistor_one + battery->resistor_two) * 100.0) / battery->resistor_two) / 100.0;
 }
+
+/**
+ * @brief Function to check the battery voltage isn't below dangerous levels
+ * 
+ * @param battery The battery that is being checked.
+ */
+uint8_t Battery_hasCharge(Battery* battery){
+    return battery->voltage > MIN_BAT_VOLTAGE;
+}

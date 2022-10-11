@@ -43,5 +43,26 @@ void FSIA10B_INT(FSIA10B *receiver, TIM_HandleTypeDef *htim){
  * @return uint8_t boolean value 0 if not received within TIMEOUT time, 1 if receiving
  */
 uint8_t FSIA10B_isReceivingSignal(FSIA10B *receiver){
-    return (HAL_GetTick() - receiver->lastUpdate) < FSIA10B_RECEIVER_TIMEOUT;
+    return (HAL_GetTick() - receiver->lastUpdate) < FSIA10B_RECEIVER_TIMEOUT_MS;
+}
+
+/**
+ * @brief Function to check if the receiver has armed the drone
+ * 
+ * @param receiver Receiver which is being checked
+ * @return uint8_t 0 (false) if not armed 1 (true) if armed
+ */
+uint8_t FSIA10B_isArmed(FSIA10B *receiver){
+    uint16_t armChannelVal = receiver->channels[FSIA10B_CHANNEL_ARM];
+    return armChannelVal >= ((FSIA10B_TIME_CHANNEL_MAX_MICRO + FSIA10B_TIME_CHANNEL_MIN_MICRO) / 2);
+}
+
+/**
+ * @brief Function to check if the throttle is off
+ * 
+ * @param receiver Receiver to check
+ * @return uint8_t 1 (true) if throttle off (<= 1000) and 0 (false) if throttle on
+ */
+uint8_t FSIA10B_throttleIsOff(FSIA10B *receiver){
+    return receiver->channels[FSIA10B_CHANNEL_THROTTLE] <= FSIA10B_TIME_CHANNEL_MIN_MICRO;
 }

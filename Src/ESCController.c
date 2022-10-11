@@ -28,13 +28,13 @@ void ESC_arm(ESC_4Channels* escs){
     // Setup PWM for motors
     ESC_startAll(escs);
 
-    HAL_Delay(500);
+    HAL_Delay(1000);
 
-    uint32_t quarterThrottle = escs->min_throttle + (escs->max_throttle - escs->min_throttle) / 4;
+    uint32_t quarterThrottle = escs->min_throttle + ((escs->max_throttle - escs->min_throttle) / 4);
 
     ESC_writeAll(escs, quarterThrottle);
 
-    HAL_Delay(100);
+    HAL_Delay(1000);
 
     ESC_writeAll(escs, escs->min_throttle);
 }
