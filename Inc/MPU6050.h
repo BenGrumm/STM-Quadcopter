@@ -130,6 +130,8 @@ HAL_StatusTypeDef MPU6050_ReadDataDMA(MPU6050* device);
 void MPU6050_DMAReadCplt(MPU6050* device);
 void MPU6050_DMALoop(MPU6050* device);
 
+uint8_t MPU6050_isReadingData(MPU6050* device);
+
 HAL_StatusTypeDef MPU6050_calculateGyroAndMPUError(MPU6050* device, float* gyroError, float* accelError);
 
 HAL_StatusTypeDef MPU6050_readMPUAndCalculatePositionFusion(MPU6050* device);
