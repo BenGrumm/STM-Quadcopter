@@ -43,7 +43,8 @@ void FSIA10B_INT(FSIA10B *receiver, TIM_HandleTypeDef *htim){
  * @return uint8_t boolean value 0 if not received within TIMEOUT time, 1 if receiving
  */
 uint8_t FSIA10B_isReceivingSignal(FSIA10B *receiver){
-    return (HAL_GetTick() - receiver->lastUpdate) < FSIA10B_RECEIVER_TIMEOUT_MS;
+    uint8_t isReceiving = (HAL_GetTick() - receiver->lastUpdate) < FSIA10B_RECEIVER_TIMEOUT_MS;
+    return isReceiving;
 }
 
 /**
@@ -54,7 +55,8 @@ uint8_t FSIA10B_isReceivingSignal(FSIA10B *receiver){
  */
 uint8_t FSIA10B_isArmed(FSIA10B *receiver){
     uint16_t armChannelVal = receiver->channels[FSIA10B_CHANNEL_ARM];
-    return armChannelVal >= ((FSIA10B_TIME_CHANNEL_MAX_MICRO + FSIA10B_TIME_CHANNEL_MIN_MICRO) / 2);
+    uint8_t isArmed = armChannelVal >= ((FSIA10B_TIME_CHANNEL_MAX_MICRO + FSIA10B_TIME_CHANNEL_MIN_MICRO) / 2);
+    return isArmed;
 }
 
 /**

@@ -225,7 +225,8 @@ void MPU6050_DMAReadCplt(MPU6050* device){
  * @return uint8_t 0 (false) if not received data 1 (true) if receving data
  */
 uint8_t MPU6050_isReadingData(MPU6050* device){
-    return (HAL_GetTick() - device->lastGyroReadingTime) < MPU_RECEIVE_TIMEOUT_MS;
+    uint8_t isReading = (HAL_GetTick() - device->lastGyroReadingTime) < MPU_RECEIVE_TIMEOUT_MS;
+    return isReading;
 }
 
 /**

@@ -19,5 +19,6 @@ void BatteryADCIRQ(ADC_HandleTypeDef* hadc1, Battery* battery){
  * @param battery The battery that is being checked.
  */
 uint8_t Battery_hasCharge(Battery* battery){
-    return battery->voltage > MIN_BAT_VOLTAGE;
+    uint8_t hasCharge = battery->voltage > MIN_BAT_VOLTAGE;
+    return hasCharge;
 }

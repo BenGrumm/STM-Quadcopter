@@ -121,7 +121,7 @@ typedef struct {
     bool hasNewData;
     uint8_t dmaDataBuffer[MPU6050_CONSECUTIVE_DATA_REGS];
 
-    uint32_t lastGyroReadingTime; // stores time to calculate gyro movement
+    volatile uint32_t lastGyroReadingTime; // stores time to calculate gyro movement
 }MPU6050;
 
 uint8_t setupMPU6050(MPU6050* mpu, I2C_HandleTypeDef* i2c_handler, FusionAhrs* ahrs);

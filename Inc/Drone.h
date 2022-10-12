@@ -7,9 +7,9 @@
 #include "MPU6050.h"
 
 typedef enum {
-    POWER_ON = 0,
-    ARMED,
-    DISARMED
+    DISARMED = 0,
+    ARMING,
+    ARMED
 } DRONE_STATE;
 
 typedef enum {

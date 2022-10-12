@@ -161,8 +161,6 @@ int main(void)
 
   MPU6050_ReadDataDMA(&mpu);
 
-  // ESC_arm(&motors);
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -178,7 +176,7 @@ int main(void)
     const FusionQuaternion quat = FusionAhrsGetQuaternion(&ahrs);
 
     #define Q quat.element
-      // printf("%0.3f/%0.3f/%0.3f/%0.3f\n", Q.w, Q.x, Q.y, Q.z);
+      printf("%0.3f/%0.3f/%0.3f/%0.3f\n", Q.w, Q.x, Q.y, Q.z);
     #undef Q
 
     Drone_run(&drone);
@@ -187,9 +185,9 @@ int main(void)
 
       // printf("Loop Count = %ld\n", loopCount);
       // printf("ADC - %.2f\n", bat.voltage);
-      printf("1 - %4d, 2 - %4d, 3 - %4d, 4 - %4d, 5 - %4d, 6 - %4d, 7 - %4d, 8 - %4d\n", 
-            receiver.channels[0], receiver.channels[1], receiver.channels[2], receiver.channels[3], 
-            receiver.channels[4], receiver.channels[5], receiver.channels[6], receiver.channels[7]);
+      // printf("1 - %4d, 2 - %4d, 3 - %4d, 4 - %4d, 5 - %4d, 6 - %4d, 7 - %4d, 8 - %4d\n", 
+      //       receiver.channels[0], receiver.channels[1], receiver.channels[2], receiver.channels[3], 
+      //       receiver.channels[4], receiver.channels[5], receiver.channels[6], receiver.channels[7]);
       // #define Q quat.element
       //   printf("%0.3f/%0.3f/%0.3f/%0.3f\n", Q.w, Q.x, Q.y, Q.z);
       // #undef Q
