@@ -30,6 +30,7 @@ typedef struct{
 
 HAL_StatusTypeDef ESC_setup(ESC_4Channels* escs);
 void ESC_arm(ESC_4Channels* escs);
+uint8_t ESC_armNonBlocking(ESC_4Channels* escs);
 void ESC_disarm(ESC_4Channels* escs);
 void ESC_throttleCalibration(ESC_4Channels* escs);
 void ESC_writeAll(ESC_4Channels* escs, uint32_t throttle);
