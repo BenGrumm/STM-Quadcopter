@@ -13,6 +13,10 @@
 // 12 bit value from 0-4095 with 3.3v = 4095 & 0v = 0
 #define ADC_TO_VOLTAGE_VAL 1240.9f
 
+#define MIN_VOLTAGE_4S  13
+
+#define MIN_BAT_VOLTAGE MIN_VOLTAGE_4S
+
 typedef struct {
     uint32_t resistor_one;
     uint32_t resistor_two;
@@ -20,5 +24,6 @@ typedef struct {
 }Battery;
 
 void BatteryADCIRQ(ADC_HandleTypeDef* hadc1, Battery* battery);
+uint8_t Battery_hasCharge(Battery* battery);
 
 #endif

@@ -25,9 +25,10 @@
 #include "BatteryMeasure4SLiPo.h"
 #include "FS-IA10B_driver.h"
 #include "MPU6050.h"
+#include "Drone.h"
+#include "ESCController.h"
 
 extern uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len);
-extern uint16_t fsia10b_channel_values[];
 
 /* USER CODE END Includes */
 
@@ -57,8 +58,12 @@ TIM_HandleTypeDef htim3;
 
 /* USER CODE BEGIN PV */
 
+Drone drone;
+
 Battery bat;
 MPU6050 mpu;
+FSIA10B receiver;
+ESC_4Channels motors;
 
 /* USER CODE END PV */
 
@@ -117,27 +122,29 @@ int main(void)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
+  HAL_StatusTypeDef error;
+
+  Drone_initialise(&drone, &motors, &bat, &mpu, &receiver);
+
   // Start TIM for PPM input
-  HAL_StatusTypeDef error = HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
+  FSIA10B_setup(&receiver);
+  receiver.htim = &htim1;
+  error = HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
 
   // Start timer and ADC for battery measurment
+  HAL_ADC_Start_IT(&hadc1);
   error = HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
   __HAL_TIM_CLEAR_FLAG(&htim3, TIM_FLAG_UPDATE);
-  HAL_ADC_Start_IT(&hadc1);
 
   bat.resistor_one = 100000;
   bat.resistor_two = 22000;
 
-  // Setup PWM for motors
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
+  motors.pwm_tim = &htim2;
+  motors.min_throttle = 1000;
+  motors.max_throttle = 2000;
 
-  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1000);
-  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 1000);
-  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 2000);
-  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 1000);
+  ESC_setup(&motors);
+  // ESC_arm(&motors);
 
   // Setup MPU for reading
   FusionAhrs ahrs;
@@ -169,24 +176,18 @@ int main(void)
     const FusionQuaternion quat = FusionAhrsGetQuaternion(&ahrs);
 
     #define Q quat.element
-      // printf("%0.3f/%0.3f/%0.3f/%0.3f\n", Q.w, Q.x, Q.y, Q.z);
+      printf("%0.3f/%0.3f/%0.3f/%0.3f\n", Q.w, Q.x, Q.y, Q.z);
     #undef Q
 
-    if(fsia10b_channel_values[2] < 1000){
-      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1000);
-    }else if(fsia10b_channel_values[2] > 2000){
-      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 2000);
-    }else{
-      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, fsia10b_channel_values[2]);
-    }
+    Drone_run(&drone);
 
     if(HAL_GetTick() - lastFlash > 1000){
 
       // printf("Loop Count = %ld\n", loopCount);
       // printf("ADC - %.2f\n", bat.voltage);
-      printf("1 - %4d, 2 - %4d, 3 - %4d, 4 - %4d, 5 - %4d, 6 - %4d, 7 - %4d, 8 - %4d\n", 
-            fsia10b_channel_values[0], fsia10b_channel_values[1], fsia10b_channel_values[2], fsia10b_channel_values[3], 
-            fsia10b_channel_values[4], fsia10b_channel_values[5], fsia10b_channel_values[6], fsia10b_channel_values[7]);
+      // printf("1 - %4d, 2 - %4d, 3 - %4d, 4 - %4d, 5 - %4d, 6 - %4d, 7 - %4d, 8 - %4d\n", 
+      //       receiver.channels[0], receiver.channels[1], receiver.channels[2], receiver.channels[3], 
+      //       receiver.channels[4], receiver.channels[5], receiver.channels[6], receiver.channels[7]);
       // #define Q quat.element
       //   printf("%0.3f/%0.3f/%0.3f/%0.3f\n", Q.w, Q.x, Q.y, Q.z);
       // #undef Q
@@ -410,11 +411,17 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE BEGIN TIM2_Init 1 */
 
+  /**
+   * Input clock = 96MHz
+   * Prescale by 96MHz down to 1MHz
+   * Then we have a period of 20,000 pulses to give a 50Hz signal (20ms length)
+   */
+
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 96-1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 20000-1;
+  htim2.Init.Period = 2000-1;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -567,7 +574,9 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim){
-  FSIA10B_INT(htim);
+  if(htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1){
+    FSIA10B_INT(&receiver, htim);
+  }
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc){

@@ -219,6 +219,17 @@ void MPU6050_DMAReadCplt(MPU6050* device){
 }
 
 /**
+ * @brief Function to check that MPU is still reading valid data
+ * 
+ * @param device The device that we are checking
+ * @return uint8_t 0 (false) if not received data 1 (true) if receving data
+ */
+uint8_t MPU6050_isReadingData(MPU6050* device){
+    uint8_t isReading = (HAL_GetTick() - device->lastGyroReadingTime) < MPU_RECEIVE_TIMEOUT_MS;
+    return isReading;
+}
+
+/**
  * @brief When using DMA this function should be called in the main loop of the function
  * 
  * @param device the device that is being read
