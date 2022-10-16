@@ -111,6 +111,10 @@ typedef struct {
     uint8_t MPU_Accel_Range; //  One of MPU_ACCEL_SCALE_RANGE_2G - MPU_ACCEL_SCALE_RANGE_16G
 
     FusionAhrs* ahrs;
+    float gyro_degreesPerS[3];
+    float accel_gs[3];
+    float temperature;
+
     float gyro_angle[3]; // X, Y, Z
     float accel_angle[3]; // X, Y, Z
 

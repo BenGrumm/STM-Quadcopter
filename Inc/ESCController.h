@@ -33,6 +33,7 @@ void ESC_arm(ESC_4Channels* escs);
 uint8_t ESC_armNonBlocking(ESC_4Channels* escs);
 void ESC_disarm(ESC_4Channels* escs);
 void ESC_throttleCalibration(ESC_4Channels* escs);
+void ESC_writeMotors(ESC_4Channels* escs, uint32_t frontLeft, uint32_t backRight, uint32_t frontRight, uint32_t backLeft);
 void ESC_writeAll(ESC_4Channels* escs, uint32_t throttle);
 long map(long x, long in_min, long in_max, long out_min, long out_max);
 

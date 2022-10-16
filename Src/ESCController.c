@@ -139,16 +139,29 @@ void ESC_throttleCalibration(ESC_4Channels* escs){
 }
 
 /**
+ * @brief Function to write values to the individual escs
+ * 
+ * @param escs The escs controlling the motors
+ * @param frontLeft The value to set the front left motor to
+ * @param backRight The value to set the back right motor to
+ * @param frontRight The value to set the front right motor to
+ * @param backLeft The value to set the back left motor to
+ */
+void ESC_writeMotors(ESC_4Channels* escs, uint32_t frontLeft, uint32_t backRight, uint32_t frontRight, uint32_t backLeft){
+    __HAL_TIM_SET_COMPARE(escs->pwm_tim, TIM_CHANNEL_1, frontLeft);
+    __HAL_TIM_SET_COMPARE(escs->pwm_tim, TIM_CHANNEL_2, backRight);
+    __HAL_TIM_SET_COMPARE(escs->pwm_tim, TIM_CHANNEL_3, frontRight);
+    __HAL_TIM_SET_COMPARE(escs->pwm_tim, TIM_CHANNEL_4, backLeft);
+}
+
+/**
  * @brief Function to write a value to the compare register of all Escs (pwm channels)
  * 
  * @param escs The escs to write to
  * @param throttle The throttle to sett all of the escs to
  */
 void ESC_writeAll(ESC_4Channels* escs, uint32_t throttle){
-    __HAL_TIM_SET_COMPARE(escs->pwm_tim, TIM_CHANNEL_1, throttle);
-    __HAL_TIM_SET_COMPARE(escs->pwm_tim, TIM_CHANNEL_2, throttle);
-    __HAL_TIM_SET_COMPARE(escs->pwm_tim, TIM_CHANNEL_3, throttle);
-    __HAL_TIM_SET_COMPARE(escs->pwm_tim, TIM_CHANNEL_4, throttle);
+    ESC_writeMotors(escs, throttle, throttle, throttle, throttle);
 }
 
 /**

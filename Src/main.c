@@ -175,9 +175,9 @@ int main(void)
 
     const FusionQuaternion quat = FusionAhrsGetQuaternion(&ahrs);
 
-    #define Q quat.element
-      printf("%0.3f/%0.3f/%0.3f/%0.3f\n", Q.w, Q.x, Q.y, Q.z);
-    #undef Q
+    // #define Q quat.element
+    //   printf("%0.3f/%0.3f/%0.3f/%0.3f\n", Q.w, Q.x, Q.y, Q.z);
+    // #undef Q
 
     Drone_run(&drone);
 

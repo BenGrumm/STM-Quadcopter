@@ -236,18 +236,16 @@ uint8_t MPU6050_isReadingData(MPU6050* device){
  */
 void MPU6050_DMALoop(MPU6050* device){
     if(device->hasNewData){
-        int16_t convertedRegs[MPU6050_CONSECUTIVE_DATA_REGS / 2];
+        static int16_t convertedRegs[MPU6050_CONSECUTIVE_DATA_REGS / 2];
         MPU6050_convertRegsToSignedVals(device->dmaDataBuffer, convertedRegs, MPU6050_CONSECUTIVE_DATA_REGS);
-
-        float gyroValues[3], temperatureVal, accelValues[3];
 
         // Convert all register values to their actual values
         // 0-2 contain accel - 3 contains temp - 4-6 contains gyro
-        convertGyroRegsToDegreesS(device, &convertedRegs[4], gyroValues);
-        convertAccelRegToGs(device, convertedRegs, accelValues);
-        convertTemperatureRegToCelsius(&convertedRegs[3], &temperatureVal);
+        convertGyroRegsToDegreesS(device, &convertedRegs[4], device->gyro_degreesPerS);
+        convertAccelRegToGs(device, convertedRegs, device->accel_gs);
+        convertTemperatureRegToCelsius(&convertedRegs[3], &device->temperature);
 
-        calculateOrientationFusion(device, gyroValues, accelValues);
+        calculateOrientationFusion(device, device->gyro_degreesPerS, device->accel_gs);
         
         device->hasNewData = false;
 

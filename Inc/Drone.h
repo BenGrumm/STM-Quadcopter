@@ -5,6 +5,29 @@
 #include "ESCController.h"
 #include "FS-IA10B_driver.h"
 #include "MPU6050.h"
+#include "pid.h"
+#include <stdlib.h>
+
+#define PID_SAMPLE_FREQ   200
+#define PID_SAMPLE_TIME_MILLIS (1000 / PID_SAMPLE_FREQ)
+
+#define RATE_PITCH_kP   4.0
+#define RATE_PITCH_kI   0.02
+#define RATE_PITCH_kD   0
+
+#define RATE_ROLL_kP    4.0
+#define RATE_ROLL_kI    0.02
+#define RATE_ROLL_kD    0
+
+#define RATE_YAW_kP     4.0
+#define RATE_YAW_kI     0.02
+#define RATE_YAW_kD     0
+
+#define RATE_PID_MIN_OUTPUT -400
+#define RATE_PID_MAX_OUTPUT 400
+
+#define RATE_SPEED_DPS                200.0F
+#define RATE_MAX_ANGLE_PLUS_MINUS     32.8F
 
 typedef enum {
     DISARMED = 0,
@@ -25,9 +48,20 @@ typedef struct {
   Battery* battery;
   MPU6050* mpu;
   FSIA10B* receiver;
+
+  double rate_pitch_input, rate_pitch_output, rate_pitch_setpoint;
+  double rate_roll_input, rate_roll_output, rate_roll_setpoint;
+  double rate_yaw_input, rate_yaw_output, rate_yaw_setpoint;
+
+  PID_TypeDef rate_pitch;
+  PID_TypeDef rate_roll;
+  PID_TypeDef rate_yaw;
+
+  uint32_t lastLoop;
 }Drone;
 
 void Drone_initialise(Drone* drone, ESC_4Channels* motors, Battery* battery, MPU6050* mpu, FSIA10B* receiver);
 void Drone_run(Drone* drone);
+double Drone_clampValue(double num, double min, double max);
 
 #endif
