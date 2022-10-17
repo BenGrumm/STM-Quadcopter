@@ -181,7 +181,8 @@ static void Drone_armedLoop(Drone* drone){
     printf("Yaw = %6.2f, Pitch = %6.2f, Roll = %6.2f, YI = %f, PI = %f, RI = %f, Yaw = %f, Pitch = %f, Roll = %f\n", 
             drone->rate_yaw_output, drone->rate_pitch_output, drone->rate_roll_output, 
             drone->rate_yaw_input, drone->rate_pitch_input, drone->rate_roll_input,
-            euler.angle.yaw, euler.angle.pitch, euler.angle.roll);
+            euler.angle.yaw, euler.angle.pitch, euler.angle.roll
+            );
 
     // Write output
     ESC_writeMotors(drone->motors, frontLeft, backRight, frontRight, backLeft);
