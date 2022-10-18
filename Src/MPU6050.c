@@ -229,6 +229,11 @@ uint8_t MPU6050_isReadingData(MPU6050* device){
     return isReading;
 }
 
+void MPU6050_applyErrorCorrect(FusionEuler* euler){
+    euler->angle.pitch -= MPU_MOUNTING_PITCH_OFFSET;
+    euler->angle.roll -= MPU_MOUNTING_ROLL_OFFSET;
+}
+
 /**
  * @brief When using DMA this function should be called in the main loop of the function
  * 

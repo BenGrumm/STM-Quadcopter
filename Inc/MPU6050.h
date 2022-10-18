@@ -66,6 +66,8 @@
 
 #define MPU_PWR_MGMT_2          0x6C
 
+#define MPU_MOUNTING_ROLL_OFFSET    -7.3
+#define MPU_MOUNTING_PITCH_OFFSET   -2.1
 
 /**
  * Accelerometer Full Scale Range
@@ -136,6 +138,7 @@ void MPU6050_DMALoop(MPU6050* device);
 
 uint8_t MPU6050_isReadingData(MPU6050* device);
 
+void MPU6050_applyErrorCorrect(FusionEuler* euler);
 HAL_StatusTypeDef MPU6050_calculateGyroAndMPUError(MPU6050* device, float* gyroError, float* accelError);
 
 HAL_StatusTypeDef MPU6050_readMPUAndCalculatePositionFusion(MPU6050* device);

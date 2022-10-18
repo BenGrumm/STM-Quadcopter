@@ -122,6 +122,9 @@ int main(void)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
+  // Some issues with I2C and power on maybe not fully initialised???
+  HAL_Delay(200);
+
   HAL_StatusTypeDef error;
 
   Drone_initialise(&drone, &motors, &bat, &mpu, &receiver);

@@ -162,10 +162,16 @@ static void Drone_armedLoop(Drone* drone){
     uint16_t backLeft = drone->receiver->channels[FSIA10B_CHANNEL_THROTTLE];
 
     if(drone->receiver->channels[FSIA10B_CHANNEL_THROTTLE] > 1050){
-        frontLeft = frontLeft - drone->rate_yaw_output + drone->rate_pitch_output - drone->rate_roll_output;
-        backRight = backRight - drone->rate_yaw_output - drone->rate_pitch_output + drone->rate_roll_output;
-        frontRight = frontRight + drone->rate_yaw_output + drone->rate_pitch_output + drone->rate_roll_output;
-        backLeft = backLeft + drone->rate_yaw_output - drone->rate_pitch_output - drone->rate_roll_output;
+        // frontLeft = frontLeft - drone->rate_yaw_output + drone->rate_pitch_output - drone->rate_roll_output;
+        // backRight = backRight - drone->rate_yaw_output - drone->rate_pitch_output + drone->rate_roll_output;
+        // frontRight = frontRight + drone->rate_yaw_output + drone->rate_pitch_output + drone->rate_roll_output;
+        // backLeft = backLeft + drone->rate_yaw_output - drone->rate_pitch_output - drone->rate_roll_output;
+
+        // Remove YAW to make pitch and roll easier TODO remove
+        frontLeft = frontLeft - drone->rate_pitch_output + drone->rate_roll_output;
+        backRight = backRight + drone->rate_pitch_output - drone->rate_roll_output;
+        frontRight = frontRight - drone->rate_pitch_output - drone->rate_roll_output;
+        backLeft = backLeft + drone->rate_pitch_output + drone->rate_roll_output;
     }
 
     frontLeft = (uint16_t) Drone_clampValue(frontLeft, 1000, 2000);
@@ -175,6 +181,7 @@ static void Drone_armedLoop(Drone* drone){
 
     FusionQuaternion quat = FusionAhrsGetQuaternion(drone->mpu->ahrs);
     FusionEuler euler = FusionQuaternionToEuler(quat);
+    MPU6050_applyErrorCorrect(&euler);
 
     // Edit the output for the battery voltage
     // printf("Yaw = %6.2f, Pitch = %6.2f, Roll = %6.2f, FL = %d, BR = %d, FR = %d, BL = %d\n", drone->rate_yaw_output, drone->rate_pitch_output, drone->rate_roll_output, frontLeft, backRight, frontRight, backLeft);
@@ -191,6 +198,7 @@ static void Drone_armedLoop(Drone* drone){
 static void Drone_calculateRateSetpoints(Drone* drone){
     FusionQuaternion quat = FusionAhrsGetQuaternion(drone->mpu->ahrs);
     FusionEuler euler = FusionQuaternionToEuler(quat);
+    MPU6050_applyErrorCorrect(&euler);
     // Map receiver roll and pitch from ±200°/s
     // Channels should be from 1000-2000 but may be slight error
     drone->rate_pitch_setpoint = (double) Drone_calculateRateSetpoint(
