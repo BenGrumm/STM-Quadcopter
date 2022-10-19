@@ -66,8 +66,8 @@
 
 #define MPU_PWR_MGMT_2          0x6C
 
-#define MPU_MOUNTING_ROLL_OFFSET    -7.3
-#define MPU_MOUNTING_PITCH_OFFSET   -2.1
+#define MPU_MOUNTING_ROLL_OFFSET    -1.3 // -7.3 (Add to go right)
+#define MPU_MOUNTING_PITCH_OFFSET   8.2 // Add to go forward
 
 /**
  * Accelerometer Full Scale Range

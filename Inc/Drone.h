@@ -11,15 +11,15 @@
 #define PID_SAMPLE_FREQ   200.0
 #define PID_SAMPLE_TIME_MILLIS (1000.0 / PID_SAMPLE_FREQ)
 
-#define RATE_PITCH_kP   0.7
-#define RATE_PITCH_kI   0
-#define RATE_PITCH_kD   0
+#define RATE_PITCH_kP   0.19 // 0.375 original (P only)
+#define RATE_PITCH_kI   0.02
+#define RATE_PITCH_kD   0.0
 
-#define RATE_ROLL_kP    0.7
-#define RATE_ROLL_kI    0
-#define RATE_ROLL_kD    0
+#define RATE_ROLL_kP    0.19 // 0.375 original (P only)
+#define RATE_ROLL_kI    0.02
+#define RATE_ROLL_kD    0.0
 
-#define RATE_YAW_kP     1
+#define RATE_YAW_kP     0.18
 #define RATE_YAW_kI     0.02
 #define RATE_YAW_kD     0
 
