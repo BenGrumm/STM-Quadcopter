@@ -16,3 +16,9 @@ Below is a simple schematic showing the pin connections, this doesnt include and
 <p>
 <img src="https://svgur.com/i/n7K.svg">
 </p>
+
+Final drone hardware with battery installed.
+<p align="center">
+<img src="https://i.imgur.com/bnJtHOn.jpg" height="250"/>
+<img src="https://i.imgur.com/XO1Nh8u.jpg" height="250"/>
+</p>
