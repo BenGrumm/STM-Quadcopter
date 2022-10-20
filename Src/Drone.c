@@ -162,16 +162,10 @@ static void Drone_armedLoop(Drone* drone){
     uint16_t backLeft = drone->receiver->channels[FSIA10B_CHANNEL_THROTTLE];
 
     if(drone->receiver->channels[FSIA10B_CHANNEL_THROTTLE] > 1050){
-        // frontLeft = frontLeft - drone->rate_yaw_output + drone->rate_pitch_output - drone->rate_roll_output;
-        // backRight = backRight - drone->rate_yaw_output - drone->rate_pitch_output + drone->rate_roll_output;
-        // frontRight = frontRight + drone->rate_yaw_output + drone->rate_pitch_output + drone->rate_roll_output;
-        // backLeft = backLeft + drone->rate_yaw_output - drone->rate_pitch_output - drone->rate_roll_output;
-
-        // Remove YAW to make pitch and roll easier TODO remove
-        frontLeft = frontLeft - drone->rate_pitch_output + drone->rate_roll_output;
-        backRight = backRight + drone->rate_pitch_output - drone->rate_roll_output;
-        frontRight = frontRight - drone->rate_pitch_output - drone->rate_roll_output;
-        backLeft = backLeft + drone->rate_pitch_output + drone->rate_roll_output;
+        frontLeft = frontLeft - drone->rate_yaw_output - drone->rate_pitch_output + drone->rate_roll_output;
+        backRight = backRight - drone->rate_yaw_output + drone->rate_pitch_output - drone->rate_roll_output;
+        frontRight = frontRight + drone->rate_yaw_output - drone->rate_pitch_output - drone->rate_roll_output;
+        backLeft = backLeft + drone->rate_yaw_output + drone->rate_pitch_output + drone->rate_roll_output;
     }
 
     frontLeft = (uint16_t) Drone_clampValue(frontLeft, 1000, 2000);
@@ -184,12 +178,16 @@ static void Drone_armedLoop(Drone* drone){
     MPU6050_applyErrorCorrect(&euler);
 
     // Edit the output for the battery voltage
-    // printf("Yaw = %6.2f, Pitch = %6.2f, Roll = %6.2f, FL = %d, BR = %d, FR = %d, BL = %d\n", drone->rate_yaw_output, drone->rate_pitch_output, drone->rate_roll_output, frontLeft, backRight, frontRight, backLeft);
-    printf("Yaw = %6.2f, Pitch = %6.2f, Roll = %6.2f, YI = %f, PI = %f, RI = %f, Yaw = %f, Pitch = %f, Roll = %f\n", 
+    printf("Yaw = %6.2f, Pitch = %6.2f, Roll = %6.2f, FL = %d, BR = %d, FR = %d, BL = %d, Yaw = %f, Pitch = %f, Roll = %f\n", 
             drone->rate_yaw_output, drone->rate_pitch_output, drone->rate_roll_output, 
-            drone->rate_yaw_input, drone->rate_pitch_input, drone->rate_roll_input,
+            frontLeft, backRight, frontRight, backLeft,
             euler.angle.yaw, euler.angle.pitch, euler.angle.roll
             );
+    // printf("Yaw = %6.2f, Pitch = %6.2f, Roll = %6.2f, YI = %f, PI = %f, RI = %f, Yaw = %f, Pitch = %f, Roll = %f\n", 
+    //         drone->rate_yaw_output, drone->rate_pitch_output, drone->rate_roll_output, 
+    //         drone->rate_yaw_input, drone->rate_pitch_input, drone->rate_roll_input,
+    //         euler.angle.yaw, euler.angle.pitch, euler.angle.roll
+    //         );
 
     // Write output
     ESC_writeMotors(drone->motors, frontLeft, backRight, frontRight, backLeft);

@@ -19,8 +19,8 @@
 #define RATE_ROLL_kI    0.02
 #define RATE_ROLL_kD    0.0
 
-#define RATE_YAW_kP     0.18
-#define RATE_YAW_kI     0.02
+#define RATE_YAW_kP     0
+#define RATE_YAW_kI     0
 #define RATE_YAW_kD     0
 
 #define RATE_PID_MIN_OUTPUT -400
