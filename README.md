@@ -1,5 +1,10 @@
 # STM-Quadcopter
  A simple quadcopter built on the STM32F411CEU6 (black pill board) with 4 motors, a PPM receiver, ADC checking battery level and I2C communication with MPU6050 imu.
+## Initial control
+The video below shows the initial flights with a proportional and integral control loop the Pitch and Roll axis but not on Yaw.
+
+https://user-images.githubusercontent.com/25843212/196990403-6123481b-a03c-4de4-8050-d380382fdc6d.mp4
+ 
 ## Hardware
 Below are images of the perfboard wired up with the I2C (SDA=Yellow, SCL=White), PWM motor outputs (Green), PPM RC receiver input (Blue) and the battery ADC voltage divider across the resistors.
 <p align="center">
