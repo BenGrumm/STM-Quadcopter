@@ -162,10 +162,10 @@ static void Drone_armedLoop(Drone* drone){
     uint16_t backLeft = drone->receiver->channels[FSIA10B_CHANNEL_THROTTLE];
 
     if(drone->receiver->channels[FSIA10B_CHANNEL_THROTTLE] > 1050){
-        frontLeft = frontLeft - drone->rate_yaw_output - drone->rate_pitch_output + drone->rate_roll_output;
-        backRight = backRight - drone->rate_yaw_output + drone->rate_pitch_output - drone->rate_roll_output;
-        frontRight = frontRight + drone->rate_yaw_output - drone->rate_pitch_output - drone->rate_roll_output;
-        backLeft = backLeft + drone->rate_yaw_output + drone->rate_pitch_output + drone->rate_roll_output;
+        frontLeft = frontLeft + drone->rate_yaw_output - drone->rate_pitch_output + drone->rate_roll_output;
+        backRight = backRight + drone->rate_yaw_output + drone->rate_pitch_output - drone->rate_roll_output;
+        frontRight = frontRight - drone->rate_yaw_output - drone->rate_pitch_output - drone->rate_roll_output;
+        backLeft = backLeft - drone->rate_yaw_output + drone->rate_pitch_output + drone->rate_roll_output;
     }
 
     frontLeft = (uint16_t) Drone_clampValue(frontLeft, 1000, 2000);
@@ -209,8 +209,9 @@ static void Drone_calculateRateSetpoints(Drone* drone){
         (uint16_t)Drone_clampValue(drone->receiver->channels[FSIA10B_CHANNEL_ROLL], 1000, 2000)
     );
 
-    // Map receiver yaw from ±270°/s
-    drone->rate_yaw_setpoint = Drone_calculateYawRateSetpoint(
+    // Map receiver yaw from ±200°/s
+    // * -1 as yaw is going other way to controls TODO fix better
+    drone->rate_yaw_setpoint = -1 * Drone_calculateYawRateSetpoint(
         (uint16_t)Drone_clampValue(drone->receiver->channels[FSIA10B_CHANNEL_YAW], 1000, 2000),
         drone->receiver->channels[FSIA10B_CHANNEL_THROTTLE]
     );
@@ -229,7 +230,7 @@ static float Drone_calculateRateSetpoint(float angle, uint16_t pulseLength){
     float max_angle_adjust = angle * (500.0F / RATE_MAX_ANGLE_PLUS_MINUS); // To stick to a maximum angle
     float setPoint = 0;
 
-    // Center aroun 0 (+- 500) with band in middle to allow for slight error
+    // Center around 0 (+- 500) with band in middle to allow for slight error
     if(pulseLength < 1490){
         setPoint = pulseLength - 1490;
     }else if(pulseLength > 1510){
