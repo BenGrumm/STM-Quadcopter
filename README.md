@@ -23,7 +23,7 @@ Final drone hardware with battery installed.
 <img src="https://i.imgur.com/XO1Nh8u.jpg" height="250"/>
 </p>
 
-Created mount for MPU to prevent vibration impacting position accuracy.
+Created mount for MPU to reduce vibration impacting position accuracy.
 <p align="center">
 <img src="https://i.imgur.com/pBpnoNn.png" height="250"/>
 <img src="https://i.imgur.com/rq2586E.jpg" height="250"/>
