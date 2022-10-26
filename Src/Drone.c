@@ -116,8 +116,8 @@ static void Drone_armingLoop(Drone* drone){
 static uint8_t Drone_canFly(Drone* drone){
     return  FSIA10B_isArmed(drone->receiver)            // The switch to arm the drone is enable of the controller
               &&
-            // Battery_hasCharge(drone->battery)           // The controller is over the minimum voltage that is safe
-            //   &&
+            Battery_hasCharge(drone->battery)           // The controller is over the minimum voltage that is safe
+              &&
             FSIA10B_isReceivingSignal(drone->receiver)  // The Receiver is receiving up to date data
               &&
             MPU6050_isReadingData(drone->mpu);          // The MPU6050 is reading up to date data
